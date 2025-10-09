@@ -1,0 +1,11 @@
+{
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "GEMINI_API_KEY": "@gemini-api-key",
+    "FRONTEND_ORIGIN": "@frontend-origin"
+  }
+}

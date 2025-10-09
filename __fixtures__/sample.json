@@ -1,0 +1,62 @@
+{
+  "contact": {
+    "name": "John Smith",
+    "email": "john.smith@email.com",
+    "phone": "+44 7123 456789",
+    "location": "London, UK",
+    "links": "linkedin.com/in/johnsmith, github.com/johnsmith"
+  },
+  "summary": "Experienced data scientist with 5+ years in machine learning and statistical analysis. Passionate about turning complex data into actionable insights.",
+  "experience": [
+    {
+      "company": "Tech Corp",
+      "title": "Senior Data Scientist",
+      "location": "London, UK",
+      "start": "Jan 2020",
+      "end": "Present",
+      "bullets": [
+        "Led team of 5 data scientists in developing ML models",
+        "Improved prediction accuracy by 25% using ensemble methods",
+        "Deployed 10+ production models serving 1M+ users"
+      ]
+    },
+    {
+      "company": "Analytics Inc",
+      "title": "Data Analyst",
+      "location": "Manchester, UK",
+      "start": "Jun 2018",
+      "end": "Dec 2019",
+      "bullets": [
+        "Analyzed customer behavior data to identify trends",
+        "Created dashboards for executive decision-making",
+        "Reduced churn rate by 15% through predictive modeling"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "school": "University of London",
+      "degree": "MSc Data Science",
+      "dates": "2016–2018",
+      "extra": "Distinction, Thesis on Deep Learning for NLP"
+    },
+    {
+      "school": "University of Manchester",
+      "degree": "BSc Computer Science",
+      "dates": "2013–2016",
+      "extra": "First Class Honours"
+    }
+  ],
+  "skills": {
+    "hard": ["Python", "R", "SQL", "Machine Learning", "Deep Learning"],
+    "soft": ["Leadership", "Communication", "Problem Solving"],
+    "tools": ["TensorFlow", "PyTorch", "Scikit-learn", "Pandas", "Git", "Docker"]
+  },
+  "certifications": [
+    "AWS Certified Machine Learning - Specialty",
+    "Google Professional Data Engineer"
+  ],
+  "languages_extra": ["English (Native)", "Spanish (B2)", "French (A2)"],
+  "language": "EN",
+  "style": "HARVARD"
+}
