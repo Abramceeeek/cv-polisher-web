@@ -40,7 +40,7 @@ body {
   }
 
   .textarea {
-    @apply w-full px-4 py-2 bg-background-secondary border border-border rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-primary transition-colors resize-vertical min-h-[100px];
+    @apply w-full px-4 py-2 bg-background-secondary border border-border rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-primary transition-colors resize-y min-h-[100px];
   }
 
   .card {

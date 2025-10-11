@@ -21,7 +21,7 @@ export function latexEscape(text: string): string {
 /**
  * Map language code to Polyglossia language name
  */
-function getPolyglossia Language(lang: Language): string {
+function getPolyglossiaLanguage(lang: Language): string {
   switch (lang) {
     case 'EN':
       return 'english';
@@ -38,7 +38,7 @@ function getPolyglossia Language(lang: Language): string {
  * Generate LaTeX preamble with appropriate fonts and language support
  */
 function generatePreamble(lang: Language): string {
-  const polyLang = getPolyglossia Language(lang);
+  const polyLang = getPolyglossiaLanguage(lang);
 
   return `\\documentclass[11pt]{article}
 \\usepackage[a4paper,margin=1in]{geometry}
