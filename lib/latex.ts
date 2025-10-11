@@ -40,21 +40,22 @@ function getPolyglossiaLanguage(lang: Language): string {
 function generatePreamble(lang: Language): string {
   const polyLang = getPolyglossiaLanguage(lang);
 
-  return `\\documentclass[11pt]{article}
+  // For Cyrillic languages, set up font family
+  const cyrillicSetup = (lang === 'RU' || lang === 'UZ')
+    ? `\\newfontfamily\\cyrillicfont{DejaVu Serif}\n`
+    : '';
+
+  return `% IMPORTANT: Compile with XeLaTeX (not pdfLaTeX)
+% In Overleaf: Menu → Compiler → XeLaTeX
+\\documentclass[11pt]{article}
 \\usepackage[a4paper,margin=1in]{geometry}
 \\usepackage{fontspec}
 \\usepackage{polyglossia}
 \\setdefaultlanguage{${polyLang}}
 
-% Use DejaVu Serif for Cyrillic support
-\\setmainfont{DejaVu Serif}[
-  Ligatures=TeX,
-  Extension=.ttf,
-  UprightFont=*,
-  BoldFont=*-Bold,
-  ItalicFont=*-Italic,
-  BoldItalicFont=*-BoldItalic
-]
+% Use DejaVu Serif for Unicode/Cyrillic support
+\\setmainfont{DejaVu Serif}
+${cyrillicSetup}
 
 \\usepackage{enumitem}
 \\setlist[itemize]{noitemsep,topsep=0pt,leftmargin=1.5em}
