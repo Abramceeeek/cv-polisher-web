@@ -159,12 +159,12 @@ Return ONLY valid JSON with this exact structure:
   ]
 }`;
 
-    const result = await model.generateContent({
+    const geminiResult = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig,
     });
 
-    const response = result.response;
+    const response = geminiResult.response;
 
     // Check for safety blocks
     if (response.candidates && response.candidates[0]?.finishReason === 'SAFETY') {
@@ -192,7 +192,7 @@ Return ONLY valid JSON with this exact structure:
     }
 
     // Merge polished content back into original data structure
-    const result: PolishedCVData = {
+    const merged: PolishedCVData = {
       ...data,
       summary: polished.summary || data.summary,
       experience: data.experience.map((exp, idx) => {
@@ -205,7 +205,7 @@ Return ONLY valid JSON with this exact structure:
     };
 
     console.log('[Gemini Polish] Successfully polished CV');
-    return result;
+    return merged;
   } catch (error) {
     console.error('[Gemini Polish] Error:', error);
     console.log('[Gemini Polish] Falling back to heuristic polishing');
