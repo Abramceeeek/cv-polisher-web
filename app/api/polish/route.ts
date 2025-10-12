@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CVData } from '@/lib/types';
 import { polishCV } from '@/lib/polish';
-import { generateLatex } from '@/lib/latex';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs'; // Use Node.js runtime for Gemini SDK
 
+// PDF generation backend URL (Python FastAPI on Render)
+const PDF_BACKEND_URL = process.env.PDF_BACKEND_URL || 'https://cv-polisher.onrender.com';
+
 /**
- * POST /api/polish - Generate polished CV LaTeX file
+ * POST /api/polish - Generate polished CV PDF file
  */
 export async function POST(request: NextRequest) {
   try {
@@ -64,23 +66,40 @@ export async function POST(request: NextRequest) {
 
     console.log(`[API] Processing CV for: ${data.contact.name}, lang: ${data.language}, style: ${data.style}`);
 
-    // Polish the CV content
+    // Polish the CV content using Gemini
     const polishedData = await polishCV(data);
 
-    // Generate LaTeX
-    const latexContent = generateLatex(polishedData);
+    console.log(`[API] CV polished, calling PDF backend at ${PDF_BACKEND_URL}/generate-pdf`);
+
+    // Call Python backend to generate PDF
+    const pdfResponse = await fetch(`${PDF_BACKEND_URL}/generate-pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(polishedData),
+    });
+
+    if (!pdfResponse.ok) {
+      const errorText = await pdfResponse.text();
+      console.error(`[API] PDF backend error (${pdfResponse.status}): ${errorText}`);
+      throw new Error(`PDF generation failed: ${pdfResponse.statusText}`);
+    }
+
+    // Get PDF data
+    const pdfBuffer = await pdfResponse.arrayBuffer();
 
     // Generate filename
     const safeName = data.contact.name.replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = `CV_${safeName}_${data.style}_${data.language}.tex`;
+    const filename = `CV_${safeName}_${data.style}_${data.language}.pdf`;
 
-    console.log(`[API] Generated ${latexContent.length} bytes, filename: ${filename}`);
+    console.log(`[API] Generated PDF (${pdfBuffer.byteLength} bytes), filename: ${filename}`);
 
-    // Return LaTeX file
-    return new NextResponse(latexContent, {
+    // Return PDF file
+    return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
-        'Content-Type': 'application/x-tex',
+        'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Access-Control-Allow-Origin': process.env.FRONTEND_ORIGIN || '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -93,7 +112,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: 'Failed to process CV. Please check your data and try again.',
+        error: 'Failed to generate PDF. Please check your data and try again.',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       {
