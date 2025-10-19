@@ -55,12 +55,37 @@ export default function Home() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/polisher" className="btn btn-primary text-center text-lg">
-            Start Polishing Your CV
+          <Link href="/upload" className="btn btn-primary text-center text-lg">
+            🚀 Quick Upload & Polish
+          </Link>
+          <Link href="/polisher" className="btn btn-secondary text-center text-lg">
+            📝 Step-by-Step Form
           </Link>
           <Link href="/help" className="btn btn-secondary text-center text-lg">
-            Learn More
+            ❓ Learn More
           </Link>
+        </div>
+
+        {/* New vs Old Flow */}
+        <div className="grid md:grid-cols-2 gap-6 py-4">
+          <div className="card bg-primary/10 border-primary">
+            <h3 className="text-lg font-semibold text-primary mb-2">⚡ Quick Upload (New)</h3>
+            <ul className="text-sm text-text-secondary space-y-1">
+              <li>✓ Upload existing CV or paste text</li>
+              <li>✓ Add job description for tailoring</li>
+              <li>✓ Free mode or AI-powered</li>
+              <li>✓ PDF or LaTeX output</li>
+            </ul>
+          </div>
+          <div className="card">
+            <h3 className="text-lg font-semibold text-primary mb-2">📋 Step-by-Step (Original)</h3>
+            <ul className="text-sm text-text-secondary space-y-1">
+              <li>✓ Fill in detailed form</li>
+              <li>✓ Multiple experience entries</li>
+              <li>✓ Education, skills, certifications</li>
+              <li>✓ LaTeX output only</li>
+            </ul>
+          </div>
         </div>
 
         {/* How It Works */}
