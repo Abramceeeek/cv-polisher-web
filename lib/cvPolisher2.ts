@@ -242,6 +242,124 @@ Return ONLY valid JSON with the exact structure specified in your instructions. 
 }
 
 /**
+ * Extract structured CV data from uploaded document text using AI
+ * This allows users to skip the form and just upload their existing CV
+ */
+export async function extractCVDataFromDocument(
+  cvText: string,
+  jobDescription?: { job_title: string; company_name?: string; full_description: string },
+  language: 'EN' | 'RU' | 'UZ' = 'EN'
+): Promise<CVData | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.warn('[CV Extractor] No API key, cannot extract');
+    return null;
+  }
+
+  console.log('[CV Extractor] Extracting structured data from uploaded CV...');
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash-exp',
+    });
+
+    const prompt = `You are a CV data extraction engine. Extract ALL information from the following CV and return it as structured JSON.
+
+CV CONTENT:
+${cvText}
+
+Extract and return a JSON object with this EXACT structure:
+{
+  "contact": {
+    "name": "full name",
+    "email": "email",
+    "phone": "phone",
+    "location": "location",
+    "links": "comma-separated links (LinkedIn, GitHub, portfolio, etc.)"
+  },
+  "summary": "professional summary or objective (3-5 sentences)",
+  "experience": [
+    {
+      "company": "company name",
+      "title": "job title",
+      "location": "location",
+      "start": "start date (e.g., Jan 2020)",
+      "end": "end date or Present",
+      "bullets": ["responsibility 1", "achievement 2", "etc"]
+    }
+  ],
+  "education": [
+    {
+      "school": "institution name",
+      "degree": "degree and major",
+      "dates": "dates",
+      "location": "location (optional)",
+      "modules": "key modules or courses (optional)",
+      "achievements": "awards, GPA, honors (optional)"
+    }
+  ],
+  "skills": {
+    "hard": ["technical skill 1", "skill 2"],
+    "soft": ["soft skill 1", "skill 2"],
+    "tools": ["tool/technology 1", "tool 2"]
+  },
+  "languages_extra": "languages with proficiency (e.g., English (Native), Spanish (C1))",
+  "certifications": "comma-separated certifications",
+  "projects": "comma-separated notable projects or publications"
+}
+
+IMPORTANT:
+- Extract ALL information present in the CV
+- Keep dates, company names, job titles EXACTLY as written
+- If a field is not present, use empty string or empty array
+- Return ONLY valid JSON, no markdown, no explanations`;
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 4000,
+      },
+    });
+
+    let jsonText = result.response.text().trim();
+    if (jsonText.startsWith('```json')) {
+      jsonText = jsonText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    } else if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/^```\n?/, '').replace(/\n?```$/, '');
+    }
+
+    const extracted = JSON.parse(jsonText);
+
+    // Build CVData object
+    const cvData: CVData = {
+      contact: extracted.contact || { name: '', email: '', phone: '', location: '', links: '' },
+      summary: extracted.summary || '',
+      experience: extracted.experience || [],
+      education: extracted.education || [],
+      skills: extracted.skills || { hard: [], soft: [], tools: [] },
+      languages_extra: extracted.languages_extra || '',
+      certifications: extracted.certifications || '',
+      projects: extracted.projects || '',
+      job_description: jobDescription,
+      uploaded_documents: {
+        existing_cv_text: cvText,
+      },
+      language,
+      style: 'HARVARD',
+    };
+
+    console.log('[CV Extractor] Successfully extracted CV data');
+    return cvData;
+
+  } catch (error) {
+    console.error('[CV Extractor] Error extracting CV data:', error);
+    return null;
+  }
+}
+
+/**
  * Fallback polishing when AI is not available
  */
 function fallbackPolish(data: CVData): PolishResult {

@@ -55,12 +55,16 @@ export default function Home() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/create" className="btn btn-primary text-center text-lg px-8 py-4">
-            ✨ Create CV & Cover Letter
+          <Link href="/upload" className="btn btn-primary text-center text-lg px-8 py-4">
+            ⚡ Quick Upload (Fast!)
           </Link>
-          <Link href="/help" className="btn btn-secondary text-center text-lg px-8 py-4">
-            ❓ Learn More
+          <Link href="/create" className="btn btn-secondary text-center text-lg px-8 py-4">
+            📝 Detailed Form
           </Link>
+        </div>
+
+        <div className="text-center text-sm text-text-muted">
+          <strong>New!</strong> Upload your existing CV → Add job description → Generate in 30 seconds
         </div>
 
         {/* Features Overview */}
