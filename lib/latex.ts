@@ -45,9 +45,7 @@ function generatePreamble(lang: Language): string {
     ? `\\newfontfamily\\cyrillicfont{DejaVu Serif}\n`
     : '';
 
-  return `% IMPORTANT: Compile with XeLaTeX (not pdfLaTeX)
-% In Overleaf: Menu → Compiler → XeLaTeX
-\\documentclass[11pt]{article}
+  return `\\documentclass[11pt]{article}
 \\usepackage[a4paper,margin=1in]{geometry}
 \\usepackage{fontspec}
 \\usepackage{polyglossia}
@@ -377,32 +375,26 @@ export function generateCoverLetterLatex(data: CoverLetterData): string {
     ? `\\newfontfamily\\cyrillicfont{DejaVu Serif}\n`
     : '';
 
-  let tex = `% IMPORTANT: Compile with XeLaTeX (not pdfLaTeX)
-% In Overleaf: Menu → Compiler → XeLaTeX
-\\documentclass[11pt]{article}
+  let tex = `\\documentclass[11pt]{article}
 \\usepackage[a4paper,margin=1in]{geometry}
 \\usepackage{fontspec}
 \\usepackage{polyglossia}
 \\setdefaultlanguage{${polyLang}}
 
-% Use DejaVu Serif for Unicode/Cyrillic support
 \\setmainfont{DejaVu Serif}
 ${cyrillicSetup}
 \\usepackage{hyperref}
 
-% Customize hyperlinks
 \\hypersetup{
   colorlinks=true,
   linkcolor=black,
   urlcolor=blue
 }
 
-% Remove page numbering
 \\pagestyle{empty}
 
 \\begin{document}
 
-% Sender info (top right or left)
 \\noindent
 ${latexEscape(contact.name)}\\\\
 ${contact.email ? latexEscape(contact.email) + '\\\\' : ''}
@@ -411,20 +403,17 @@ ${contact.location ? latexEscape(contact.location) + '\\\\' : ''}
 
 \\vspace{12pt}
 
-% Date
 \\noindent
 \\today
 
 \\vspace{12pt}
 
-% Recipient
 \\noindent
 ${hiring_manager ? latexEscape(hiring_manager) : 'Hiring Manager'}\\\\
 ${company_name ? latexEscape(company_name) + '\\\\' : ''}
 
 \\vspace{12pt}
 
-% Greeting
 \\noindent
 Dear ${hiring_manager ? latexEscape(hiring_manager) : 'Hiring Manager'},
 
