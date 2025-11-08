@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CVData, Language, CVStyle } from '@/lib/types';
 import ExperienceFields from '@/components/ExperienceFields';
 import EducationFields from '@/components/EducationFields';
+import { extractTextFromDocument, validateAndTruncateText, cleanExtractedText } from '@/lib/documentParser';
 
 const STEPS = [
   { id: 'contact', title: 'Contact Info', icon: '👤' },
@@ -99,41 +100,63 @@ export default function CreateCVPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handle file upload and text extraction
+  // Handle file upload and text extraction with proper PDF/DOCX parsing
   const handleFileUpload = async (file: File, type: 'cv' | 'coverLetter') => {
+    setError(null);
+
     try {
-      // For now, we'll use FileReader to extract text
-      // In production, you might want to use a library like pdf-parse or mammoth
-      const reader = new FileReader();
+      console.log(`[Upload] Processing ${type} file:`, file.name, file.type, file.size);
 
-      reader.onload = async (e) => {
-        const text = e.target?.result as string;
+      // Extract text using proper parser
+      const extractedText = await extractTextFromDocument(file);
 
-        if (type === 'cv') {
-          setCvFile(file);
-          setFormData({
-            ...formData,
-            uploaded_documents: {
-              ...formData.uploaded_documents,
-              existing_cv_text: text.substring(0, 10000), // Limit to first 10k chars
-            },
-          });
-        } else {
-          setCoverLetterFile(file);
-          setFormData({
-            ...formData,
-            uploaded_documents: {
-              ...formData.uploaded_documents,
-              existing_cover_letter_text: text.substring(0, 5000),
-            },
-          });
-        }
-      };
+      // Clean and validate text
+      const cleanedText = cleanExtractedText(extractedText);
 
-      reader.readAsText(file);
-    } catch (err) {
-      console.error('Error reading file:', err);
-      setError('Failed to read file. Please try again.');
+      if (!cleanedText || cleanedText.length < 50) {
+        throw new Error('Extracted text is too short or empty. Please check your file content.');
+      }
+
+      console.log(`[Upload] Successfully extracted ${cleanedText.length} characters from ${file.name}`);
+
+      // Truncate to reasonable length and update form data
+      if (type === 'cv') {
+        const finalText = validateAndTruncateText(cleanedText, 15000);
+        setCvFile(file);
+        setFormData({
+          ...formData,
+          uploaded_documents: {
+            ...formData.uploaded_documents,
+            existing_cv_text: finalText,
+          },
+        });
+
+        // Show success message
+        console.log(`[Upload] CV uploaded: ${file.name} (${finalText.length} chars)`);
+      } else {
+        const finalText = validateAndTruncateText(cleanedText, 10000);
+        setCoverLetterFile(file);
+        setFormData({
+          ...formData,
+          uploaded_documents: {
+            ...formData.uploaded_documents,
+            existing_cover_letter_text: finalText,
+          },
+        });
+
+        // Show success message
+        console.log(`[Upload] Cover Letter uploaded: ${file.name} (${finalText.length} chars)`);
+      }
+    } catch (err: any) {
+      console.error('[Upload] Error processing file:', err);
+      setError(err.message || 'Failed to process file. Please try a different file or format.');
+
+      // Clear file on error
+      if (type === 'cv') {
+        setCvFile(null);
+      } else {
+        setCoverLetterFile(null);
+      }
     }
   };
 

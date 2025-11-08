@@ -71,6 +71,14 @@ export async function POST(request: NextRequest) {
     if (data.job_description) {
       console.log(`[API] Tailoring to job: ${data.job_description.job_title} at ${data.job_description.company_name || 'company'}`);
     }
+    if (data.uploaded_documents) {
+      if (data.uploaded_documents.existing_cv_text) {
+        console.log(`[API] Uploaded CV text: ${data.uploaded_documents.existing_cv_text.length} characters`);
+      }
+      if (data.uploaded_documents.existing_cover_letter_text) {
+        console.log(`[API] Uploaded cover letter text: ${data.uploaded_documents.existing_cover_letter_text.length} characters`);
+      }
+    }
 
     // Polish the CV and generate Cover Letter using Gemini
     const { polished_cv, cover_letter } = await polishCVAndCoverLetter(data);

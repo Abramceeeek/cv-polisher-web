@@ -24,6 +24,15 @@ CRITICAL RULES:
 8. Use strong action verbs and measurable impact where feasible
 9. Results > responsibilities
 
+USING UPLOADED DOCUMENTS (CRITICAL):
+- If an "EXISTING CV" is provided, extract ALL valuable information from it
+- Use it to find additional details the user may have forgotten in the form
+- Extract achievements, responsibilities, skills, and specific metrics mentioned
+- Incorporate these details into the polished CV and cover letter
+- If an "EXISTING COVER LETTER" is provided, use it to understand the user's writing style and tone
+- Mine the uploaded documents for specific accomplishments and numbers
+- DO NOT ignore the uploaded documents - they contain crucial information that must be integrated
+
 CV REQUIREMENTS:
 - Professional Summary: 3-5 lines tailored to target role, highlight relevant experience and 2-3 key strengths
 - Key Skills: Job-specific and grouped (Technical, Analytical, Tools/Platforms, Soft Skills)
@@ -135,12 +144,22 @@ CRITICAL: Tailor the CV and cover letter specifically to this role. Use relevant
     // Add uploaded documents if provided
     if (data.uploaded_documents) {
       if (data.uploaded_documents.existing_cv_text) {
-        prompt += `\nEXISTING CV (for context and additional details):
+        prompt += `\nEXISTING CV (MUST USE THIS INFORMATION):
+The user has uploaded their existing CV. Extract ALL valuable information from it including:
+- Additional experience details, responsibilities, and achievements
+- Specific metrics, numbers, and quantifiable results
+- Skills, tools, technologies mentioned
+- Projects, certifications, awards
+- Any other relevant information
+
+IMPORTANT: Integrate this information into the polished CV and cover letter. DO NOT ignore this uploaded content.
+
+UPLOADED CV CONTENT:
 ${data.uploaded_documents.existing_cv_text}
 `;
       }
       if (data.uploaded_documents.existing_cover_letter_text) {
-        prompt += `\nEXISTING COVER LETTER (for context and tone):
+        prompt += `\nEXISTING COVER LETTER (Use for tone and style reference):
 ${data.uploaded_documents.existing_cover_letter_text}
 `;
       }
