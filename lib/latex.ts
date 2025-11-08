@@ -84,47 +84,105 @@ ${cyrillicSetup}
 }
 
 /**
- * Generate HARVARD style LaTeX document
+ * Generate HARVARD style LaTeX document matching Abdurakhmonbek's CV style
  */
 export function toHarvardTex(data: CVData): string {
   const { contact, summary, experience, education, skills, certifications, languages_extra } = data;
 
   let tex = generatePreamble(data.language);
 
-  // Name (large and bold)
+  // Name (large, bold, centered, uppercase)
   tex += `\\begin{center}\n`;
-  tex += `{\\LARGE \\textbf{${latexEscape(contact.name)}}}\n`;
-  tex += `\\end{center}\n\n`;
+  tex += `{\\Large \\textbf{${latexEscape(contact.name.toUpperCase())}}}\n\n`;
 
-  // Contact line
+  // Location
+  if (contact.location) {
+    tex += `${latexEscape(contact.location)}\\\\\n`;
+  }
+
+  // Contact line with bullet separators
   const contactParts: string[] = [];
   if (contact.email) contactParts.push(latexEscape(contact.email));
   if (contact.phone) contactParts.push(latexEscape(contact.phone));
-  if (contact.location) contactParts.push(latexEscape(contact.location));
   if (contact.links) {
     const links = contact.links.split(',').map(l => l.trim()).filter(l => l);
     contactParts.push(...links.map(l => latexEscape(l)));
   }
 
-  tex += `\\begin{center}\n`;
-  tex += contactParts.join(' $\\bullet$ ');
-  tex += `\n\\end{center}\n\n`;
-  tex += `\\vspace{10pt}\n\n`;
-
-  // Summary
-  if (summary && summary.trim()) {
-    tex += `\\section*{Professional Summary}\n`;
-    tex += `${latexEscape(summary)}\n\n`;
+  if (contactParts.length > 0) {
+    tex += contactParts.join(' $\\cdot$ ');
   }
 
-  // Experience
+  tex += `\n\\end{center}\n\n`;
+  tex += `\\vspace{8pt}\n\n`;
+
+  // Professional Summary with underlined header
+  if (summary && summary.trim()) {
+    tex += `\\noindent\\textbf{PROFESSIONAL SUMMARY}\\\\\n`;
+    tex += `\\rule{\\textwidth}{0.4pt}\n\n`;
+    tex += `${latexEscape(summary)}\n\n`;
+    tex += `\\vspace{8pt}\n\n`;
+  }
+
+  // Education with underlined header
+  if (education && education.length > 0) {
+    tex += `\\noindent\\textbf{EDUCATION}\\\\\n`;
+    tex += `\\rule{\\textwidth}{0.4pt}\n\n`;
+
+    education.forEach((edu, idx) => {
+      // University name and dates on same line
+      tex += `\\noindent\\textbf{${latexEscape(edu.school)}}`;
+      if (edu.dates) {
+        tex += `\\hfill ${latexEscape(edu.dates)}`;
+      }
+      tex += `\\\\\n`;
+
+      // Degree in italic
+      tex += `\\textit{${latexEscape(edu.degree)}}\\\\\n`;
+
+      // Modules as bullet points
+      if (edu.modules || edu.achievements || edu.extra) {
+        tex += `\\begin{itemize}\n`;
+        if (edu.modules) {
+          tex += `  \\item Key Modules: ${latexEscape(edu.modules)}\n`;
+        }
+        if (edu.achievements) {
+          tex += `  \\item ${latexEscape(edu.achievements)}\n`;
+        }
+        if (edu.extra && !edu.modules && !edu.achievements) {
+          tex += `  \\item ${latexEscape(edu.extra)}\n`;
+        }
+        tex += `\\end{itemize}\n`;
+      }
+
+      if (idx < education.length - 1) {
+        tex += `\\vspace{4pt}\n`;
+      }
+    });
+    tex += `\\vspace{8pt}\n\n`;
+  }
+
+  // Professional Experience with underlined header
   if (experience && experience.length > 0) {
-    tex += `\\section*{Professional Experience}\n\n`;
+    tex += `\\noindent\\textbf{PROFESSIONAL EXPERIENCE}\\\\\n`;
+    tex += `\\rule{\\textwidth}{0.4pt}\n\n`;
 
     experience.forEach((exp, idx) => {
-      tex += `\\textbf{${latexEscape(exp.title)}} $|$ ${latexEscape(exp.company)}\\\\\n`;
-      tex += `{\\itshape ${latexEscape(exp.location)} $\\bullet$ ${latexEscape(exp.start)} -- ${latexEscape(exp.end)}}\n\n`;
+      // Job title and dates on same line
+      tex += `\\noindent\\textbf{${latexEscape(exp.title)}}`;
+      if (exp.start || exp.end) {
+        tex += `\\hfill \\textit{${latexEscape(exp.start)} -- ${latexEscape(exp.end)}}`;
+      }
+      tex += `\\\\\n`;
 
+      // Company in italic
+      tex += `\\textit{${latexEscape(exp.company)}}`;
+      if (exp.location) {
+        tex += ` $\\cdot$ ${latexEscape(exp.location)}`;
+      }
+      tex += `\\\\\n`;
+
+      // Bullet points
       if (exp.bullets && exp.bullets.length > 0) {
         tex += `\\begin{itemize}\n`;
         exp.bullets.forEach(bullet => {
@@ -136,76 +194,67 @@ export function toHarvardTex(data: CVData): string {
       }
 
       if (idx < experience.length - 1) {
-        tex += `\\vspace{8pt}\n\n`;
+        tex += `\\vspace{4pt}\n`;
       }
     });
-    tex += '\n';
+    tex += `\\vspace{8pt}\n\n`;
   }
 
-  // Education
-  if (education && education.length > 0) {
-    tex += `\\section*{Education}\n\n`;
-
-    education.forEach((edu, idx) => {
-      tex += `\\textbf{${latexEscape(edu.school)}}\\\\\n`;
-      tex += `{\\itshape ${latexEscape(edu.degree)}} $\\bullet$ ${latexEscape(edu.dates)}\n`;
-
-      if (edu.extra && edu.extra.trim()) {
-        tex += `\\\\\n${latexEscape(edu.extra)}\n`;
-      }
-
-      if (idx < education.length - 1) {
-        tex += `\\vspace{6pt}\n\n`;
-      }
-    });
-    tex += '\n';
-  }
-
-  // Skills
+  // Technical Skills with underlined header and definition list style
   if (skills && (skills.hard.length > 0 || skills.soft.length > 0 || skills.tools.length > 0)) {
-    tex += `\\section*{Technical Skills}\n\n`;
+    tex += `\\noindent\\textbf{TECHNICAL SKILLS}\\\\\n`;
+    tex += `\\rule{\\textwidth}{0.4pt}\n\n`;
 
+    // Use definition-list style like your CV
     if (skills.hard.length > 0) {
-      tex += `\\textbf{Technical Skills:} ${skills.hard.map(latexEscape).join(', ')}\\\\\n`;
+      tex += `\\noindent\\textbf{Programming:} ${skills.hard.map(latexEscape).join(', ')}\\\\\n`;
     }
     if (skills.tools.length > 0) {
-      tex += `\\textbf{Tools \\& Technologies:} ${skills.tools.map(latexEscape).join(', ')}\\\\\n`;
+      tex += `\\noindent\\textbf{Tools \\& Technologies:} ${skills.tools.map(latexEscape).join(', ')}\\\\\n`;
     }
     if (skills.soft.length > 0) {
-      tex += `\\textbf{Soft Skills:} ${skills.soft.map(latexEscape).join(', ')}\\\\\n`;
+      tex += `\\noindent\\textbf{Core Competencies:} ${skills.soft.map(latexEscape).join(', ')}\\\\\n`;
     }
-    tex += '\n';
+    tex += `\\vspace{8pt}\n\n`;
   }
 
-  // Projects/Publications/Achievements
+  // Leadership & Activities (Projects)
   if (data.projects && data.projects.length > 0) {
-    tex += `\\section*{Projects \\& Achievements}\n\n`;
+    tex += `\\noindent\\textbf{LEADERSHIP \\& ACTIVITIES}\\\\\n`;
+    tex += `\\rule{\\textwidth}{0.4pt}\n\n`;
     tex += `\\begin{itemize}\n`;
     data.projects.forEach(project => {
       if (project && project.trim()) {
         tex += `  \\item ${latexEscape(project)}\n`;
       }
     });
-    tex += `\\end{itemize}\n\n`;
+    tex += `\\end{itemize}\n`;
+    tex += `\\vspace{8pt}\n\n`;
   }
 
-  // Certifications
+  // Courses & Certifications
   if (certifications && certifications.length > 0) {
-    tex += `\\section*{Certifications}\n\n`;
+    tex += `\\noindent\\textbf{COURSES \\& CERTIFICATIONS}\\\\\n`;
+    tex += `\\rule{\\textwidth}{0.4pt}\n\n`;
     tex += `\\begin{itemize}\n`;
     certifications.forEach(cert => {
       if (cert && cert.trim()) {
         tex += `  \\item ${latexEscape(cert)}\n`;
       }
     });
-    tex += `\\end{itemize}\n\n`;
+    tex += `\\end{itemize}\n`;
+    tex += `\\vspace{8pt}\n\n`;
   }
 
-  // Languages
+  // Languages & Soft Skills
   if (languages_extra && languages_extra.length > 0) {
-    tex += `\\section*{Languages}\n\n`;
-    tex += languages_extra.map(latexEscape).join(' $\\bullet$ ');
-    tex += '\n\n';
+    tex += `\\noindent\\textbf{LANGUAGES \\& SOFT SKILLS}\\\\\n`;
+    tex += `\\rule{\\textwidth}{0.4pt}\n\n`;
+    tex += `\\noindent\\textbf{Languages:} ${languages_extra.map(latexEscape).join(', ')}\\\\\n`;
+    if (skills && skills.soft.length > 0) {
+      tex += `\\noindent\\textbf{Core Competencies:} ${skills.soft.map(latexEscape).join(', ')}\\\\\n`;
+    }
+    tex += '\n';
   }
 
   tex += `\\end{document}\n`;
@@ -365,7 +414,7 @@ export function toProTex(data: CVData): string {
 }
 
 /**
- * Generate Cover Letter LaTeX document
+ * Generate Cover Letter LaTeX document matching CV style
  */
 export function generateCoverLetterLatex(data: CoverLetterData): string {
   const { contact, company_name, job_title, hiring_manager, paragraphs, language } = data;
@@ -395,11 +444,23 @@ ${cyrillicSetup}
 
 \\begin{document}
 
-\\noindent
-${latexEscape(contact.name)}\\\\
-${contact.email ? latexEscape(contact.email) + '\\\\' : ''}
-${contact.phone ? latexEscape(contact.phone) + '\\\\' : ''}
+\\begin{center}
+{\\Large \\textbf{${latexEscape(contact.name.toUpperCase())}}}
+
 ${contact.location ? latexEscape(contact.location) + '\\\\' : ''}
+`;
+
+  // Contact info centered with bullets
+  const contactParts: string[] = [];
+  if (contact.email) contactParts.push(latexEscape(contact.email));
+  if (contact.phone) contactParts.push(latexEscape(contact.phone));
+
+  if (contactParts.length > 0) {
+    tex += contactParts.join(' $\\cdot$ ');
+  }
+
+  tex += `
+\\end{center}
 
 \\vspace{12pt}
 
