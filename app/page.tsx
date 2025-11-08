@@ -55,36 +55,52 @@ export default function Home() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/upload" className="btn btn-primary text-center text-lg">
-            🚀 Quick Upload & Polish
+          <Link href="/create" className="btn btn-primary text-center text-lg px-8 py-4">
+            ✨ Create CV & Cover Letter
           </Link>
-          <Link href="/polisher" className="btn btn-secondary text-center text-lg">
-            📝 Step-by-Step Form
-          </Link>
-          <Link href="/help" className="btn btn-secondary text-center text-lg">
+          <Link href="/help" className="btn btn-secondary text-center text-lg px-8 py-4">
             ❓ Learn More
           </Link>
         </div>
 
-        {/* New vs Old Flow */}
-        <div className="grid md:grid-cols-2 gap-6 py-4">
-          <div className="card bg-primary/10 border-primary">
-            <h3 className="text-lg font-semibold text-primary mb-2">⚡ Quick Upload (New)</h3>
-            <ul className="text-sm text-text-secondary space-y-1">
-              <li>✓ Upload existing CV or paste text</li>
-              <li>✓ Add job description for tailoring</li>
-              <li>✓ Free mode or AI-powered</li>
-              <li>✓ PDF or LaTeX output</li>
-            </ul>
-          </div>
-          <div className="card">
-            <h3 className="text-lg font-semibold text-primary mb-2">📋 Step-by-Step (Original)</h3>
-            <ul className="text-sm text-text-secondary space-y-1">
-              <li>✓ Fill in detailed form</li>
-              <li>✓ Multiple experience entries</li>
-              <li>✓ Education, skills, certifications</li>
-              <li>✓ LaTeX output only</li>
-            </ul>
+        {/* Features Overview */}
+        <div className="card bg-gradient-to-r from-primary/10 to-primary/5 border-primary/30">
+          <h3 className="text-xl font-semibold text-primary mb-4 text-center">
+            🎯 Complete CV & Cover Letter Creation
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <h4 className="font-semibold text-primary">📝 Step-by-Step Form</h4>
+              <ul className="text-sm text-text-secondary space-y-1">
+                <li>✓ Guided form for all CV sections</li>
+                <li>✓ Contact, education, experience, skills</li>
+                <li>✓ Projects, certifications, languages</li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-semibold text-primary">📄 Upload & Enhance</h4>
+              <ul className="text-sm text-text-secondary space-y-1">
+                <li>✓ Upload existing CV for context</li>
+                <li>✓ Upload cover letter for tone matching</li>
+                <li>✓ Paste job description for targeting</li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-semibold text-primary">🤖 AI Enhancement</h4>
+              <ul className="text-sm text-text-secondary space-y-1">
+                <li>✓ Professional summary optimization</li>
+                <li>✓ Bullet point improvements</li>
+                <li>✓ ATS keyword integration</li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-semibold text-primary">📦 Dual Output</h4>
+              <ul className="text-sm text-text-secondary space-y-1">
+                <li>✓ Professional Harvard-style CV</li>
+                <li>✓ Tailored cover letter (3-5 paragraphs)</li>
+                <li>✓ Both in LaTeX format (compile on Overleaf)</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -94,19 +110,19 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-6 text-center">
             <div className="space-y-2">
               <div className="text-3xl font-bold text-primary">1</div>
-              <p className="text-text-secondary">Fill in your CV details through our multi-step form</p>
+              <p className="text-text-secondary">Fill in CV details step-by-step + upload existing documents</p>
             </div>
             <div className="space-y-2">
               <div className="text-3xl font-bold text-primary">2</div>
-              <p className="text-text-secondary">Choose your preferred style and language</p>
+              <p className="text-text-secondary">Add job description for automatic targeting and tailoring</p>
             </div>
             <div className="space-y-2">
               <div className="text-3xl font-bold text-primary">3</div>
-              <p className="text-text-secondary">AI polishes your content for ATS optimization</p>
+              <p className="text-text-secondary">AI generates optimized CV + cover letter with keywords</p>
             </div>
             <div className="space-y-2">
               <div className="text-3xl font-bold text-primary">4</div>
-              <p className="text-text-secondary">Download your .tex file and compile in Overleaf</p>
+              <p className="text-text-secondary">Download LaTeX file and compile on Overleaf (free)</p>
             </div>
           </div>
         </div>
