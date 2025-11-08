@@ -1,4 +1,4 @@
-import { CVData, Language } from './types';
+import { CVData, Language, CoverLetterData } from './types';
 
 /**
  * Escape LaTeX special characters in user-provided text
@@ -179,6 +179,18 @@ export function toHarvardTex(data: CVData): string {
     tex += '\n';
   }
 
+  // Projects/Publications/Achievements
+  if (data.projects && data.projects.length > 0) {
+    tex += `\\section*{Projects \\& Achievements}\n\n`;
+    tex += `\\begin{itemize}\n`;
+    data.projects.forEach(project => {
+      if (project && project.trim()) {
+        tex += `  \\item ${latexEscape(project)}\n`;
+      }
+    });
+    tex += `\\end{itemize}\n\n`;
+  }
+
   // Certifications
   if (certifications && certifications.length > 0) {
     tex += `\\section*{Certifications}\n\n`;
@@ -309,6 +321,21 @@ export function toProTex(data: CVData): string {
     tex += '\n';
   }
 
+  // Projects/Publications/Achievements
+  if (data.projects && data.projects.length > 0) {
+    tex += `\\section*{PROJECTS \\& ACHIEVEMENTS}\n`;
+    tex += `\\vspace{-6pt}\n`;
+    tex += `\\hrule\n`;
+    tex += `\\vspace{6pt}\n\n`;
+    tex += `\\begin{itemize}\n`;
+    data.projects.forEach(project => {
+      if (project && project.trim()) {
+        tex += `  \\item ${latexEscape(project)}\n`;
+      }
+    });
+    tex += `\\end{itemize}\n\n`;
+  }
+
   // Certifications
   if (certifications && certifications.length > 0) {
     tex += `\\section*{CERTIFICATIONS}\n`;
@@ -335,6 +362,99 @@ export function toProTex(data: CVData): string {
   }
 
   tex += `\\end{document}\n`;
+
+  return tex;
+}
+
+/**
+ * Generate Cover Letter LaTeX document
+ */
+export function generateCoverLetterLatex(data: CoverLetterData): string {
+  const { contact, company_name, job_title, hiring_manager, paragraphs, language } = data;
+
+  const polyLang = getPolyglossiaLanguage(language);
+  const cyrillicSetup = (language === 'RU' || language === 'UZ')
+    ? `\\newfontfamily\\cyrillicfont{DejaVu Serif}\n`
+    : '';
+
+  let tex = `% IMPORTANT: Compile with XeLaTeX (not pdfLaTeX)
+% In Overleaf: Menu → Compiler → XeLaTeX
+\\documentclass[11pt]{article}
+\\usepackage[a4paper,margin=1in]{geometry}
+\\usepackage{fontspec}
+\\usepackage{polyglossia}
+\\setdefaultlanguage{${polyLang}}
+
+% Use DejaVu Serif for Unicode/Cyrillic support
+\\setmainfont{DejaVu Serif}
+${cyrillicSetup}
+\\usepackage{hyperref}
+
+% Customize hyperlinks
+\\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue
+}
+
+% Remove page numbering
+\\pagestyle{empty}
+
+\\begin{document}
+
+% Sender info (top right or left)
+\\noindent
+${latexEscape(contact.name)}\\\\
+${contact.email ? latexEscape(contact.email) + '\\\\' : ''}
+${contact.phone ? latexEscape(contact.phone) + '\\\\' : ''}
+${contact.location ? latexEscape(contact.location) + '\\\\' : ''}
+
+\\vspace{12pt}
+
+% Date
+\\noindent
+\\today
+
+\\vspace{12pt}
+
+% Recipient
+\\noindent
+${hiring_manager ? latexEscape(hiring_manager) : 'Hiring Manager'}\\\\
+${company_name ? latexEscape(company_name) + '\\\\' : ''}
+
+\\vspace{12pt}
+
+% Greeting
+\\noindent
+Dear ${hiring_manager ? latexEscape(hiring_manager) : 'Hiring Manager'},
+
+\\vspace{12pt}
+
+`;
+
+  // Add each paragraph
+  paragraphs.forEach((para, idx) => {
+    if (para && para.trim()) {
+      tex += `\\noindent\n${latexEscape(para)}\n\n`;
+      if (idx < paragraphs.length - 1) {
+        tex += `\\vspace{10pt}\n\n`;
+      }
+    }
+  });
+
+  // Closing
+  tex += `\\vspace{12pt}
+
+\\noindent
+Sincerely,
+
+\\vspace{24pt}
+
+\\noindent
+${latexEscape(contact.name)}
+
+\\end{document}
+`;
 
   return tex;
 }

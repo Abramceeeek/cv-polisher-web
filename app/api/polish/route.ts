@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CVData } from '@/lib/types';
-import { polishCV } from '@/lib/polish';
+import { polishCVAndCoverLetter } from '@/lib/cvPolisher2';
+import { generateLatex, generateCoverLetterLatex } from '@/lib/latex';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs'; // Use Node.js runtime for Gemini SDK
 
-// PDF generation backend URL (Python FastAPI on Render)
-const PDF_BACKEND_URL = process.env.PDF_BACKEND_URL || 'https://cv-polisher.onrender.com';
-
 /**
- * POST /api/polish - Generate polished CV PDF file
+ * POST /api/polish - Generate polished CV and Cover Letter LaTeX files
+ *
+ * Returns both documents in a single response with separator:
+ * 1. Harvard_CV.tex
+ * 2. %%% COVER LETTER %%%
+ * 3. Harvard_Cover_Letter.tex
  */
 export async function POST(request: NextRequest) {
   try {
@@ -65,41 +68,37 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[API] Processing CV for: ${data.contact.name}, lang: ${data.language}, style: ${data.style}`);
-
-    // Polish the CV content using Gemini
-    const polishedData = await polishCV(data);
-
-    console.log(`[API] CV polished, calling PDF backend at ${PDF_BACKEND_URL}/generate-pdf`);
-
-    // Call Python backend to generate PDF
-    const pdfResponse = await fetch(`${PDF_BACKEND_URL}/generate-pdf`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(polishedData),
-    });
-
-    if (!pdfResponse.ok) {
-      const errorText = await pdfResponse.text();
-      console.error(`[API] PDF backend error (${pdfResponse.status}): ${errorText}`);
-      throw new Error(`PDF generation failed: ${pdfResponse.statusText}`);
+    if (data.job_description) {
+      console.log(`[API] Tailoring to job: ${data.job_description.job_title} at ${data.job_description.company_name || 'company'}`);
     }
 
-    // Get PDF data
-    const pdfBuffer = await pdfResponse.arrayBuffer();
+    // Polish the CV and generate Cover Letter using Gemini
+    const { polished_cv, cover_letter } = await polishCVAndCoverLetter(data);
+
+    console.log(`[API] CV and Cover Letter polished, generating LaTeX...`);
+
+    // Generate LaTeX for CV
+    const cvLatex = generateLatex(polished_cv);
+
+    // Generate LaTeX for Cover Letter
+    const coverLetterLatex = generateCoverLetterLatex(cover_letter);
+
+    // Combine both documents with separator
+    const combinedOutput = `${cvLatex}
+%%% COVER LETTER %%%
+${coverLetterLatex}`;
+
+    console.log(`[API] Generated combined LaTeX output (${combinedOutput.length} bytes)`);
 
     // Generate filename
     const safeName = data.contact.name.replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = `CV_${safeName}_${data.style}_${data.language}.pdf`;
+    const filename = `CV_and_CoverLetter_${safeName}_${data.style}_${data.language}.txt`;
 
-    console.log(`[API] Generated PDF (${pdfBuffer.byteLength} bytes), filename: ${filename}`);
-
-    // Return PDF file
-    return new NextResponse(pdfBuffer, {
+    // Return combined LaTeX as text file
+    return new NextResponse(combinedOutput, {
       status: 200,
       headers: {
-        'Content-Type': 'application/pdf',
+        'Content-Type': 'text/plain; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Access-Control-Allow-Origin': process.env.FRONTEND_ORIGIN || '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -112,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: 'Failed to generate PDF. Please check your data and try again.',
+        error: 'Failed to generate CV and Cover Letter. Please check your data and try again.',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       {
